@@ -30,93 +30,69 @@ Implementation using C or pyhton code
 
 
 ## PROGRAM:
-PROGRAM:
-```
-Caesar Cipher Encryption Code:
-#include <stdio.h>
+``` C
 
-void encrypt(char text[], int shift) {
+#include <stdio.h>
+#include <string.h>
+
+void encrypt(char message[], int shift) {
     char ch;
-    for (int i = 0; text[i] != '\0'; ++i) {
-        ch = text[i];
-        
+    for (int i = 0; message[i] != '\0'; ++i) {
+        ch = message[i];
         if (ch >= 'a' && ch <= 'z') {
             ch = ch + shift;
-
             if (ch > 'z') {
                 ch = ch - 'z' + 'a' - 1;
             }
-
-            text[i] = ch;
+            message[i] = ch;
         } else if (ch >= 'A' && ch <= 'Z') {
             ch = ch + shift;
-
             if (ch > 'Z') {
                 ch = ch - 'Z' + 'A' - 1;
             }
-
-            text[i] = ch;
+            message[i] = ch;
         }
     }
+    printf("Encrypted message: %s\n", message);
 }
 
-int main() {
-    char text[100];
-    int shift;
-
-    printf("Enter a message to encrypt: ");
-    gets(text);
-
-    printf("Enter shift amount: ");
-    scanf("%d", &shift);
-
-    encrypt(text, shift);
-
-    printf("Encrypted message: %s\n", text);
-
-    return 0;
-}
-Caesar Cipher Decryption Code
-#include <stdio.h>
-
-void decrypt(char text[], int shift) {
+void decrypt(char message[], int shift) {
     char ch;
-    for (int i = 0; text[i] != '\0'; ++i) {
-        ch = text[i];
-        
+    for (int i = 0; message[i] != '\0'; ++i) {
+        ch = message[i];
         if (ch >= 'a' && ch <= 'z') {
             ch = ch - shift;
-
             if (ch < 'a') {
                 ch = ch + 'z' - 'a' + 1;
             }
-
-            text[i] = ch;
+            message[i] = ch;
         } else if (ch >= 'A' && ch <= 'Z') {
             ch = ch - shift;
-
             if (ch < 'A') {
                 ch = ch + 'Z' - 'A' + 1;
             }
-
-            text[i] = ch;
+            message[i] = ch;
         }
     }
+    printf("Decrypted message: %s\n", message);
 }
 
 int main() {
-    char text[100];
+    char message[100];
     int shift;
 
-    printf("Enter a message to decrypt: ");
-    gets(text);
+    printf("Enter a message: ");
+    gets(message);  // reads a line of text
 
     printf("Enter shift amount: ");
     scanf("%d", &shift);
 
-    decrypt(text, shift);
+    // Make a copy of the message to decrypt later
+    char encrypted_message[100];
+    strcpy(encrypted_message, message);
 
-    printf("Decrypted message: %s\n", text);
+    encrypt(encrypted_message, shift);
+    decrypt(encrypted_message, shift);
 
     return 0;
 }
@@ -125,8 +101,9 @@ int main() {
 
 ## OUTPUT:
 
-![Screenshot 2024-08-30 140959](https://github.com/user-attachments/assets/5b0ef596-9cfc-4662-9562-80fc0d835281)
-![Screenshot 2024-08-30 140914](https://github.com/user-attachments/assets/6b85d93e-cc75-47bb-afd5-d2a62b9de923)
+![Screenshot 2024-09-02 142641](https://github.com/user-attachments/assets/7c07adb9-cf1a-454c-b0dd-d287f48a63d0)
+
+
 
 ## RESULT:
 The program is executed successfully
@@ -171,133 +148,149 @@ To decrypt, use the INVERSE (opposite) of the last 3 rules, and the 1st as-is (d
 
 
 ## PROGRAM:
-```
+``` c
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
 #define SIZE 5
 
-void generateKeyTable(char key[], char keyTable[SIZE][SIZE]) {
-    int dicty[26] = {0};
-    int i, j, k = 0, len = strlen(key);
+void generateKeyTable(char key[], int keyLength, char keyTable[SIZE][SIZE]) {
+    int used[26] = {0};  // To track used characters
+    int i, j, k = 0;
 
-
-    for (i = 0; i < len; i++) {
-        if (key[i] != 'j' && dicty[key[i] - 'a'] == 0) {
-            keyTable[k / SIZE][k % SIZE] = key[i];
-            dicty[key[i] - 'a'] = 1;
-            k++;
+    for (i = 0; i < keyLength; i++) {
+        if (key[i] != 'j') {
+            if (used[key[i] - 'a'] == 0) {
+                used[key[i] - 'a'] = 1;
+                keyTable[k / SIZE][k % SIZE] = key[i];
+                k++;
+            }
         }
     }
-
 
     for (i = 0; i < 26; i++) {
-        if (i != 9 && dicty[i] == 0) { // skip 'j'
-            keyTable[k / SIZE][k % SIZE] = (char)(i + 'a');
+        if (i + 'a' != 'j' && used[i] == 0) {
+            keyTable[k / SIZE][k % SIZE] = i + 'a';
             k++;
         }
     }
 }
 
-void prepareText(char text[], char preparedText[]) {
-    int i, j = 0, len = strlen(text);
-
-    for (i = 0; i < len; i++) {
-        text[i] = tolower(text[i]);
-        if (text[i] == 'j') {
-            text[i] = 'i';
-        }
-    }
-
-    for (i = 0; i < len; i++) {
-        if (isalpha(text[i])) {
-            preparedText[j++] = text[i];
-        }
-    }
-
-    preparedText[j] = '\0';
-
-
-    for (i = 0; i < j; i += 2) {
-        if (preparedText[i] == preparedText[i + 1]) {
-            memmove(preparedText + i + 2, preparedText + i + 1, j - i + 1);
-            preparedText[i + 1] = 'x';
-            j++;
-        }
-    }
-
-    if (strlen(preparedText) % 2 != 0) {
-        preparedText[j++] = 'x';
-        preparedText[j] = '\0';
-    }
-}
-
-void searchPosition(char keyTable[SIZE][SIZE], char a, char b, int pos[]) {
+void search(char keyTable[SIZE][SIZE], char a, char b, int *row1, int *col1, int *row2, int *col2) {
     int i, j;
-
-    if (a == 'j') a = 'i';
-    if (b == 'j') b = 'i';
 
     for (i = 0; i < SIZE; i++) {
         for (j = 0; j < SIZE; j++) {
             if (keyTable[i][j] == a) {
-                pos[0] = i;
-                pos[1] = j;
-            }
-            if (keyTable[i][j] == b) {
-                pos[2] = i;
-                pos[3] = j;
+                *row1 = i;
+                *col1 = j;
+            } else if (keyTable[i][j] == b) {
+                *row2 = i;
+                *col2 = j;
             }
         }
     }
 }
 
-void encryptOrDecrypt(char text[], char keyTable[SIZE][SIZE], int mode) {
-    int i, pos[4], len = strlen(text);
+void encryptPair(char keyTable[SIZE][SIZE], char a, char b, char *x, char *y) {
+    int row1, col1, row2, col2;
 
-    for (i = 0; i < len; i += 2) {
-        searchPosition(keyTable, text[i], text[i + 1], pos);
+    search(keyTable, a, b, &row1, &col1, &row2, &col2);
 
-        if (pos[0] == pos[2]) {
-            text[i] = keyTable[pos[0]][(pos[1] + mode + SIZE) % SIZE];
-            text[i + 1] = keyTable[pos[2]][(pos[3] + mode + SIZE) % SIZE];
-        } else if (pos[1] == pos[3]) {
-            text[i] = keyTable[(pos[0] + mode + SIZE) % SIZE][pos[1]];
-            text[i + 1] = keyTable[(pos[2] + mode + SIZE) % SIZE][pos[3]];
-        } else {
-            text[i] = keyTable[pos[0]][pos[3]];
-            text[i + 1] = keyTable[pos[2]][pos[1]];
-        }
+    if (row1 == row2) {
+        *x = keyTable[row1][(col1 + 1) % SIZE];
+        *y = keyTable[row2][(col2 + 1) % SIZE];
+    } else if (col1 == col2) {
+        *x = keyTable[(row1 + 1) % SIZE][col1];
+        *y = keyTable[(row2 + 1) % SIZE][col2];
+    } else {
+        *x = keyTable[row1][col2];
+        *y = keyTable[row2][col1];
     }
+}
+
+void decryptPair(char keyTable[SIZE][SIZE], char a, char b, char *x, char *y) {
+    int row1, col1, row2, col2;
+
+    search(keyTable, a, b, &row1, &col1, &row2, &col2);
+
+    if (row1 == row2) {
+        *x = keyTable[row1][(col1 + SIZE - 1) % SIZE];
+        *y = keyTable[row2][(col2 + SIZE - 1) % SIZE];
+    } else if (col1 == col2) {
+        *x = keyTable[(row1 + SIZE - 1) % SIZE][col1];
+        *y = keyTable[(row2 + SIZE - 1) % SIZE][col2];
+    } else {
+        *x = keyTable[row1][col2];
+        *y = keyTable[row2][col1];
+    }
+}
+
+void encrypt(char keyTable[SIZE][SIZE], char plainText[], char cipherText[]) {
+    int i, j = 0;
+    char a, b;
+
+    for (i = 0; plainText[i] != '\0'; i += 2) {
+        a = plainText[i];
+        if (plainText[i + 1] != '\0') {
+            b = plainText[i + 1];
+        } else {
+            b = 'x';
+        }
+
+        if (a == b) {
+            b = 'x';
+            i--;
+        }
+
+        encryptPair(keyTable, a, b, &cipherText[j], &cipherText[j + 1]);
+        j += 2;
+    }
+    cipherText[j] = '\0';
+}
+
+void decrypt(char keyTable[SIZE][SIZE], char cipherText[], char plainText[]) {
+    int i, j = 0;
+    char a, b;
+
+    for (i = 0; cipherText[i] != '\0'; i += 2) {
+        a = cipherText[i];
+        b = cipherText[i + 1];
+
+        decryptPair(keyTable, a, b, &plainText[j], &plainText[j + 1]);
+        j += 2;
+    }
+    plainText[j] = '\0';
 }
 
 int main() {
-    char key[30], text[100], preparedText[100], keyTable[SIZE][SIZE];
-    int choice;
+    char key[100], plainText[100], cipherText[100], decryptedText[100];
+    char keyTable[SIZE][SIZE];
+    int i, keyLength;
 
     printf("Enter the key: ");
-    gets(key);
+    scanf("%s", key);
 
-    generateKeyTable(key, keyTable);
-
-    printf("Enter the text: ");
-    gets(text);
-
-    prepareText(text, preparedText);
-
-    printf("Enter 1 to encrypt or 2 to decrypt: ");
-    scanf("%d", &choice);
-
-    if (choice == 1) {
-        encryptOrDecrypt(preparedText, keyTable, 1);  
-        printf("Encrypted text: %s\n", preparedText);
-    } else if (choice == 2) {
-        encryptOrDecrypt(preparedText, keyTable, -1); 
-        printf("Decrypted text: %s\n", preparedText);
-    } else {
-        printf("Invalid choice!\n");
+    for (i = 0; key[i] != '\0'; i++) {
+        key[i] = tolower(key[i]);
     }
+
+    keyLength = strlen(key);
+    generateKeyTable(key, keyLength, keyTable);
+
+    printf("Enter the plaintext: ");
+    scanf("%s", plainText);
+
+    for (i = 0; plainText[i] != '\0'; i++) {
+        plainText[i] = tolower(plainText[i]);
+    }
+
+    encrypt(keyTable, plainText, cipherText);
+    printf("Encrypted Text: %s\n", cipherText);
+
+    decrypt(keyTable, cipherText, decryptedText);
+    printf("Decrypted Text: %s\n", decryptedText);
 
     return 0;
 }
@@ -305,8 +298,10 @@ int main() {
 
 ## OUTPUT:
 
-![Screenshot 2024-08-30 142415](https://github.com/user-attachments/assets/627be3c6-ef6a-4e9d-9d0c-cdf1adc35e2f)
-![Screenshot 2024-08-30 142353](https://github.com/user-attachments/assets/cf5a16ba-b5c8-4670-a28e-01e6cf44b6e7)
+![Screenshot 2024-09-02 142845](https://github.com/user-attachments/assets/fb9bda5d-fe54-422a-b2d9-5f531be33e52)
+
+
+
 ## RESULT:
 The program is executed successfully
 
@@ -340,179 +335,105 @@ The cipher can, be adapted to an alphabet with any number of letters. All arithm
 
 
 ## PROGRAM:
-```
+``` C
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
-#define MATRIX_SIZE 3
+int keymat[3][3] = { { 1, 2, 1 }, { 2, 3, 2 }, { 2, 2, 1 } };
+int invkeymat[3][3] = { { -1, 0, 1 }, { 2, -1, 0 }, { -2, 2, -1 } };
+char key[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-void getKeyMatrix(char key[], int keyMatrix[MATRIX_SIZE][MATRIX_SIZE]) {
-    int k = 0;
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        for (int j = 0; j < MATRIX_SIZE; j++) {
-            keyMatrix[i][j] = (key[k]) % 65; // 'A' -> 0, 'B' -> 1, ...
-            k++;
-        }
-    }
+// Function to encode a triplet of characters
+void encode(char a, char b, char c, char ret[]) {
+    int x, y, z;
+    int posa = (int)a - 65;
+    int posb = (int)b - 65;
+    int posc = (int)c - 65;
+
+    x = posa * keymat[0][0] + posb * keymat[1][0] + posc * keymat[2][0];
+    y = posa * keymat[0][1] + posb * keymat[1][1] + posc * keymat[2][1];
+    z = posa * keymat[0][2] + posb * keymat[1][2] + posc * keymat[2][2];
+
+    ret[0] = key[x % 26];
+    ret[1] = key[y % 26];
+    ret[2] = key[z % 26];
+    ret[3] = '\0';
 }
 
-void getCofactor(int mat[MATRIX_SIZE][MATRIX_SIZE], int temp[MATRIX_SIZE][MATRIX_SIZE], int p, int q, int n) {
-    int i = 0, j = 0;
-    for (int row = 0; row < n; row++) {
-        for (int col = 0; col < n; col++) {
-            if (row != p && col != q) {
-                temp[i][j++] = mat[row][col];
-                if (j == n - 1) {
-                    j = 0;
-                    i++;
-                }
-            }
-        }
-    }
-}
+// Function to decode a triplet of characters
+void decode(char a, char b, char c, char ret[]) {
+    int x, y, z;
+    int posa = (int)a - 65;
+    int posb = (int)b - 65;
+    int posc = (int)c - 65;
 
-int determinant(int mat[MATRIX_SIZE][MATRIX_SIZE], int n) {
-    int D = 0;
-    if (n == 1)
-        return mat[0][0];
+    x = posa * invkeymat[0][0] + posb * invkeymat[1][0] + posc * invkeymat[2][0];
+    y = posa * invkeymat[0][1] + posb * invkeymat[1][1] + posc * invkeymat[2][1];
+    z = posa * invkeymat[0][2] + posb * invkeymat[1][2] + posc * invkeymat[2][2];
 
-    int temp[MATRIX_SIZE][MATRIX_SIZE];
-    int sign = 1;
-
-    for (int f = 0; f < n; f++) {
-        getCofactor(mat, temp, 0, f, n);
-        D += sign * mat[0][f] * determinant(temp, n - 1);
-        sign = -sign;
-    }
-
-    return D;
-}
-
-void adjoint(int mat[MATRIX_SIZE][MATRIX_SIZE], int adj[MATRIX_SIZE][MATRIX_SIZE]) {
-    if (MATRIX_SIZE == 1) {
-        adj[0][0] = 1;
-        return;
-    }
-
-    int sign = 1, temp[MATRIX_SIZE][MATRIX_SIZE];
-
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        for (int j = 0; j < MATRIX_SIZE; j++) {
-            getCofactor(mat, temp, i, j, MATRIX_SIZE);
-            sign = ((i + j) % 2 == 0) ? 1 : -1;
-            adj[j][i] = (sign * determinant(temp, MATRIX_SIZE - 1));
-        }
-    }
-}
-
-int modInverse(int a, int m) {
-    a = a % m;
-    for (int x = 1; x < m; x++)
-        if ((a * x) % m == 1)
-            return x;
-    return -1;
-}
-
-void inverse(int mat[MATRIX_SIZE][MATRIX_SIZE], int inverse[MATRIX_SIZE][MATRIX_SIZE]) {
-    int det = determinant(mat, MATRIX_SIZE);
-    int invDet = modInverse(det, 26);
-
-    if (invDet == -1) {
-        printf("Inverse doesn't exist, key matrix is not invertible!\n");
-        return;
-    }
-
-    int adj[MATRIX_SIZE][MATRIX_SIZE];
-    adjoint(mat, adj);
-
-    for (int i = 0; i < MATRIX_SIZE; i++)
-        for (int j = 0; j < MATRIX_SIZE; j++)
-            inverse[i][j] = (adj[i][j] * invDet) % 26;
-
-    for (int i = 0; i < MATRIX_SIZE; i++)
-        for (int j = 0; j < MATRIX_SIZE; j++)
-            if (inverse[i][j] < 0)
-                inverse[i][j] += 26;
-}
-
-void multiplyMatrix(int mat1[MATRIX_SIZE][MATRIX_SIZE], int mat2[], int res[]) {
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        res[i] = 0;
-        for (int j = 0; j < MATRIX_SIZE; j++) {
-            res[i] += mat1[i][j] * mat2[j];
-        }
-        res[i] = res[i] % 26;
-    }
-}
-
-void encrypt(char message[], int keyMatrix[MATRIX_SIZE][MATRIX_SIZE]) {
-    int messageVector[MATRIX_SIZE];
-    int cipherVector[MATRIX_SIZE];
-
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        messageVector[i] = (message[i]) % 65;
-    }
-
-    multiplyMatrix(keyMatrix, messageVector, cipherVector);
-
-    printf("Encrypted text: ");
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        printf("%c", cipherVector[i] + 65);
-    }
-    printf("\n");
-}
-
-void decrypt(char message[], int inverseKeyMatrix[MATRIX_SIZE][MATRIX_SIZE]) {
-    int messageVector[MATRIX_SIZE];
-    int plainVector[MATRIX_SIZE];
-
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        messageVector[i] = (message[i]) % 65;
-    }
-
-    multiplyMatrix(inverseKeyMatrix, messageVector, plainVector);
-
-    printf("Decrypted text: ");
-    for (int i = 0; i < MATRIX_SIZE; i++) {
-        printf("%c", plainVector[i] + 65);
-    }
-    printf("\n");
+    ret[0] = key[(x % 26 < 0) ? (26 + x % 26) : (x % 26)];
+    ret[1] = key[(y % 26 < 0) ? (26 + y % 26) : (y % 26)];
+    ret[2] = key[(z % 26 < 0) ? (26 + z % 26) : (z % 26)];
+    ret[3] = '\0';
 }
 
 int main() {
-    char message[MATRIX_SIZE + 1];
-    char key[MATRIX_SIZE * MATRIX_SIZE + 1];
-    int keyMatrix[MATRIX_SIZE][MATRIX_SIZE];
-    int inverseKeyMatrix[MATRIX_SIZE][MATRIX_SIZE];
-    int choice;
+    char msg[1000];
+    char enc[1000] = "";
+    char dec[1000] = "";
+    int n;
 
-    printf("Enter the %d-letter key: ", MATRIX_SIZE * MATRIX_SIZE);
-    gets(key);
+    strcpy(msg, "JASWANTH");
+    printf("Input message : %s\n", msg);
 
-    getKeyMatrix(key, keyMatrix);
-
-    printf("Enter the %d-letter message: ", MATRIX_SIZE);
-    gets(message);
-
-    printf("Enter 1 to encrypt or 2 to decrypt: ");
-    scanf("%d", &choice);
-
-    if (choice == 1) {
-        encrypt(message, keyMatrix);
-    } else if (choice == 2) {
-        inverse(keyMatrix, inverseKeyMatrix);
-        decrypt(message, inverseKeyMatrix);
-    } else {
-        printf("Invalid choice!\n");
+    // Convert the input message to uppercase
+    for (int i = 0; i < strlen(msg); i++) {
+        msg[i] = toupper(msg[i]);
     }
 
+    // Remove spaces
+    n = strlen(msg) % 3;
+
+    // Append padding text 'X' if necessary
+    if (n != 0) {
+        for (int i = 1; i <= (3 - n); i++) {
+            strcat(msg, "X");
+        }
+    }
+
+    printf("Padded message : %s\n", msg);
+
+    // Encode the message
+    for (int i = 0; i < strlen(msg); i += 3) {
+        char a = msg[i];
+        char b = msg[i + 1];
+        char c = msg[i + 2];
+        char encoded[4];
+        encode(a, b, c, encoded);
+        strcat(enc, encoded);
+    }
+
+    printf("Encoded message : %s\n", enc);
+
+    // Decode the message
+    for (int i = 0; i < strlen(enc); i += 3) {
+        char a = enc[i];
+        char b = enc[i + 1];
+        char c = enc[i + 2];
+        char decoded[4];
+        decode(a, b, c, decoded);
+        strcat(dec, decoded);
+    }
+
+    printf("Decoded message : %s\n", dec);
     return 0;
 }
 ```
 ## OUTPUT:
 
-![Screenshot 2024-08-30 143445](https://github.com/user-attachments/assets/4f669e2c-fd5d-447f-a31e-75c50c301265)
-![Screenshot 2024-08-30 143339](https://github.com/user-attachments/assets/c211d703-4227-4e14-90c8-a7add0606d81)
+![Screenshot 2024-09-02 142942](https://github.com/user-attachments/assets/c0d8e18d-b3e2-437b-bc3f-8e4995872f1a)
+
 
 ## RESULT:
 The program is executed successfully
@@ -545,79 +466,89 @@ The Vigenere cipher is a method of encrypting alphabetic text by using a series 
 
 
 ## PROGRAM:
-```
+``` C
 #include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#include <stdlib.h>  // For exit() function
+#include <ctype.h>   // For toupper() function
+#include <string.h>  // For strlen() function
 
-void generateKey(char str[], char key[]) {
-    int strLen = strlen(str);
-    int keyLen = strlen(key);
-    int i, j;
-
-    for (i = 0, j = 0; i < strLen; i++, j++) {
-        if (j == keyLen)
-            j = 0;
-        key[i] = key[j];
-    }
-    key[i] = '\0';
-}
-
-void encryptDecrypt(char str[], char key[], int mode) {
-    int strLen = strlen(str);
-    char result[strLen];
-
-    for (int i = 0; i < strLen; i++) {
-        if (isalpha(str[i])) {
-            char base = isupper(str[i]) ? 'A' : 'a';
-            if (mode == 1) { 
-                result[i] = (str[i] + key[i] - 2 * base) % 26 + base;
-            } else if (mode == 2) { 
-                result[i] = (str[i] - key[i] + 26) % 26 + base;
-            }
-        } else {
-            result[i] = str[i]; 
-        }
-    }
-
-    result[strLen] = '\0';
-    printf("Result: %s\n", result);
-}
+void encipher();
+void decipher();
 
 int main() {
-    char str[100], key[100];
     int choice;
+    while (1) {
+        printf("\n1. Encrypt Text");
+        printf("\n2. Decrypt Text");
+        printf("\n3. Exit");
+        printf("\n\nEnter Your Choice: ");
+        scanf("%d", &choice);
 
-    printf("Enter the text: ");
-    gets(str);
-
-    printf("Enter the key: ");
-    gets(key);
-
-    char originalKey[100];
-    strcpy(originalKey, key);
-
-    generateKey(str, key);
-
-    printf("Enter 1 to encrypt or 2 to decrypt: ");
-    scanf("%d", &choice);
-
-    if (choice == 1) {
-        encryptDecrypt(str, key, 1);  
-    } else if (choice == 2) {
-        encryptDecrypt(str, key, 2);  
-    } else {
-        printf("Invalid choice!\n");
+        if (choice == 3)
+            exit(0);
+        else if (choice == 1)
+            encipher();
+        else if (choice == 2)
+            decipher();
+        else
+            printf("Please Enter a Valid Option.\n");
     }
+    return 0;  // Added return statement for the main function
+}
 
-    return 0;
+void encipher() {
+    unsigned int i, j;
+    char input[50], key[10];
+
+    printf("\n\nEnter Plain Text: ");
+    scanf("%s", input);  // Removed newline for better input handling
+
+    printf("Enter Key Value: ");
+    scanf("%s", key);
+
+    printf("Resultant Cipher Text: ");
+    for (i = 0, j = 0; i < strlen(input); i++, j++) {
+        if (j >= strlen(key)) {
+            j = 0;
+        }
+        printf("%c", 65 + (((toupper(input[i]) - 65) + (toupper(key[j]) - 65)) % 26));
+    }
+    printf("\n");  // Added newline for output formatting
+}
+
+void decipher() {
+    unsigned int i, j;
+    char input[50], key[10];
+    int value;
+
+    printf("\n\nEnter Cipher Text: ");
+    scanf("%s", input);  // Removed newline for better input handling
+
+    printf("Enter the Key Value: ");
+    scanf("%s", key);
+
+    printf("Resultant Plain Text: ");
+    for (i = 0, j = 0; i < strlen(input); i++, j++) {
+        if (j >= strlen(key)) {
+            j = 0;
+        }
+
+        // Calculate the decrypted character value
+        value = (toupper(input[i]) - 65) - (toupper(key[j]) - 65);
+        if (value < 0) {
+            value += 26;  // Correct for negative values in circular shift
+        }
+        printf("%c", 65 + (value % 26));
+    }
+    printf("\n");  // Added newline for output formatting
 }
 ```
 
 ## OUTPUT:
 
-![Screenshot 2024-08-30 144342](https://github.com/user-attachments/assets/3ab19040-e8b1-4372-a06a-2a24b7bbc20f)
-![Screenshot 2024-08-30 144315](https://github.com/user-attachments/assets/8cc508cd-af23-4250-8a4e-4b48d451bd9d)
+![Screenshot 2024-09-02 143213](https://github.com/user-attachments/assets/6051c6b1-c077-44e0-b8d2-3f6491282c73)
+
+
 
 ## RESULT:
 The program is executed successfully
@@ -649,63 +580,117 @@ In the rail fence cipher, the plaintext is written downwards and diagonally on s
 
 ## PROGRAM:
 
-```
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-main()
-{
-int i,j,len,rails,count,code[100][1000];
- char str[1000];
- printf("Enter a Secret Message\n");
- gets(str);
- len=strlen(str);
-printf("Enter number of rails\n");
-scanf("%d",&rails);
-for(i=0;i<rails;i++)
-{
- for(j=0;j<len;j++)
- {
- code[i][j]=0;
- }
+``` C
+#include <stdio.h>
+#include <string.h>
+
+void encryptRailFence(char *text, int key, char *cipherText) {
+    int len = strlen(text);
+    int row, col, direction;
+    char rail[key][len];
+
+    // Initializing the rail matrix with null characters
+    for (row = 0; row < key; row++)
+        for (col = 0; col < len; col++)
+            rail[row][col] = '\n';
+
+    // Placing characters in the rail matrix in a zig-zag manner
+    row = 0;
+    direction = 1; // 1 for down, -1 for up
+    for (col = 0; col < len; col++) {
+        rail[row][col] = text[col];
+        if (row == 0)
+            direction = 1;
+        else if (row == key - 1)
+            direction = -1;
+        row += direction;
+    }
+
+    // Reading the matrix row-wise to get the cipher text
+    int index = 0;
+    for (row = 0; row < key; row++) {
+        for (col = 0; col < len; col++) {
+            if (rail[row][col] != '\n') {
+                cipherText[index++] = rail[row][col];
+            }
+        }
+    }
+    cipherText[index] = '\0';
 }
-count=0;
-j=0;
-while(j<len)
-{
-if(count%2==0)
-{
-for(i=0;i<rails;i++)
-{
- //strcpy(code[i][j],str[j]);
- code[i][j]=(int)str[j]; 
- j++;
+
+void decryptRailFence(char *cipherText, int key, char *plainText) {
+    int len = strlen(cipherText);
+    int row, col, direction;
+    char rail[key][len];
+
+    // Initializing the rail matrix with null characters
+    for (row = 0; row < key; row++)
+        for (col = 0; col < len; col++)
+            rail[row][col] = '\n';
+
+    // Marking the places in the rail matrix where the cipher text characters will go
+    row = 0;
+    direction = 1; // 1 for down, -1 for up
+    for (col = 0; col < len; col++) {
+        rail[row][col] = '*';
+        if (row == 0)
+            direction = 1;
+        else if (row == key - 1)
+            direction = -1;
+        row += direction;
+    }
+
+    // Filling the rail matrix with the cipher text characters
+    int index = 0;
+    for (row = 0; row < key; row++) {
+        for (col = 0; col < len; col++) {
+            if (rail[row][col] == '*' && index < len) {
+                rail[row][col] = cipherText[index++];
+            }
+        }
+    }
+
+    // Reading the matrix in a zig-zag manner to get the plain text
+    row = 0;
+    direction = 1; // 1 for down, -1 for up
+    for (col = 0; col < len; col++) {
+        plainText[col] = rail[row][col];
+        if (row == 0)
+            direction = 1;
+        else if (row == key - 1)
+            direction = -1;
+        row += direction;
+    }
+    plainText[len] = '\0';
 }
+
+int main() {
+    char text[100], cipherText[100], plainText[100];
+    int key;
+
+    // Input the plain text
+    printf("Enter the plain text: ");
+    gets(text);
+
+    // Input the key (number of rails)
+    printf("Enter the key (number of rails): ");
+    scanf("%d", &key);
+
+    // Encrypt the plain text
+    encryptRailFence(text, key, cipherText);
+    printf("Encrypted Text: %s\n", cipherText);
+
+    // Decrypt the cipher text
+    decryptRailFence(cipherText, key, plainText);
+    printf("Decrypted Text: %s\n", plainText);
+
+    return 0;
 }
-else
-{
-for(i=rails-2;i>0;i--)
-{
- code[i][j]=(int)str[j];
-j++;
-} 
-} 
-count++;
-}
-for(i=0;i<rails;i++)
-{
-for(j=0;j<len;j++)
-{
- if(code[i][j]!=0)
- printf("%c",code[i][j]);
-}
-}
-printf("\n");
-}
+
 ```
 ## OUTPUT:
 
-![image](https://github.com/22008421/Cryptography---19CS412-classical-techqniques/assets/119476328/39417e01-9dd5-4b24-916e-1b48a5067ef1)
+![Screenshot 2024-09-02 143305](https://github.com/user-attachments/assets/0029bb5b-5502-491b-b6f7-32411ca354d3)
 
 
 ## RESULT:
